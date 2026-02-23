@@ -17,6 +17,10 @@ MSc Big Data Analytics student at Trent University, Canada, with experience anal
 
 ### 📊 Student Loan Collections Analysis (2015–2018)
 
+## Projects
+
+### 📊 Student Loan Collections Analysis (2015–2018)
+
 Exploratory analysis of U.S. student loan recovery mechanisms using aggregated agency-year data.
 
 **Key insights:**
@@ -24,7 +28,7 @@ Exploratory analysis of U.S. student loan recovery mechanisms using aggregated a
 - Right-skewed distributions indicating a few large recovery values
 - Rehabilitation significantly predicts voluntary payments (R² ≈ 0.63)
 
-➡️ Project folder: `student-loan-collections-eda.`
+➡️ [View Project](student-loan-collections-eda/) 
 
 ---
 
