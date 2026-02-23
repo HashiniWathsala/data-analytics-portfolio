@@ -1,4 +1,4 @@
- # Hashini Wathsala — Data Analytics Portfolio
+ # Hashini Wathsala - Data Analytics Portfolio
 
 MSc Big Data Analytics student at Trent University, Canada, with experience analyzing complex datasets using Python, R, and SQL. This portfolio showcases selected projects in statistical analysis, machine learning, and data visualization, with a focus on real-world problem-solving.
 
