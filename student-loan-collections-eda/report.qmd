@@ -1,0 +1,483 @@
+ ---
+title: "Exploratory Data Analysis of Student Loan Collections (2015–2018)"
+format: pdf
+bibliography: ref.bib
+header-includes:
+  - \usepackage{float}
+  - \floatplacement{table}{H}
+  - \floatplacement{figure}{H} 
+---
+# Introduction to the Dataset
+
+The dataset used for this Exploratory Data Analysis (EDA) is the Loan dataset, sourced from the tidytuesday team on GitHub [@tidytuesday2019]. This dataset contains information on private collection agencies, loan values, and repayments over different quarters or years, ranging from 2015 to 2018. The purpose of this analysis is to uncover trends in loan disbursement, repayments, and financial recovery efforts.
+The main focus of the dataset is on the values of rehabilitation, voluntary payments, and wage garnishments made by the borrowers and how they (voluntary payments and wage garnishments) are related to each other. All the values are in millions ($).  
+
+# Background  
+Student loan repayment has been a subject of extensive policy discussion. Programs such as loan rehabilitation are designed to help defaulted borrowers return to good standing. Voluntary payments, meanwhile, can indicate a borrower’s willingness or ability to meet repayment obligations, while wage garnishments are often imposed as a last resort.
+
+Past research, including data shared on the TidyTuesday GitHub platform, has shown that borrower repayment behavior is highly variable and influenced by income, loan amount, and institutional support. Understanding repayment patterns can support better financial planning and policy-making for educational institutions and governments.  
+
+# Data     
+
+## Data Source and Structure  
+
+The dataset was sourced from the TidyTuesday GitHub repository, originally published by the U.S. Department of Education. The analysis uses approximately 291 agency-year aggregated records (collection agency × year), not borrower-level records. It contains information on rehabilitation payments, voluntary payments, wage garnishments, and the corresponding year. The dataset spans four consecutive years, from 2015 to 2018, and reflects aggregated data reported by private loan collection agencies.  
+Each row in the dataset represents aggregated repayment data (in millions of dollars) reported by a specific collection agency for a given year. These units reflect annual summaries rather than individual borrower-level records.
+
+### Key Variables
+- rehabilitation – Payments made under rehabilitation plans
+- voluntary payments – Repayments made voluntarily by borrowers
+- wage garnishments – Amount recovered through wage garnishment
+- year – Year of observation  
+
+### Data Cleaning  
+- Removed rows with missing values in key columns.
+- Converted monetary values to millions of dollars for easier interpretation.
+
+### Limitations
+- Does not include borrower demographics (e.g., income, education).
+- Only includes four years of data, limiting longitudinal insights.  
+
+# Methodology
+
+To address the research questions outlined in our project, we employed a combination of descriptive statistics, data visualizations, correlation analysis, and regression. These methods were chosen for their ability to effectively summarize and uncover patterns in large numeric datasets over time.  
+We used Descriptive statistics such as mean, median, standard deviation (SD), variance, and interquartile range (IQR) to understand the central tendency and dispersion of repayment types (rehabilitation, voluntary payments, wage garnishments). These statistics help identify skewness, outliers, and variation across years.  
+For Data visualizations, I used histograms, boxplots, and a scatterplot with a regression line, which were used to explore the distribution of variables and detect relationships visually.
+A Pearson correlation coefficient (r) was calculated to quantify the strength and direction of the linear relationship between rehabilitation and voluntary payments. This statistical method helped us to answer our research question in our proposal.  
+
+## Analytical process 
+The analytical process included several steps.  
+
+1. Data imported using the tidytuesdayR package.
+2. Data cleaning, which involved selecting relevant columns like rehabilitation, voluntary_payments, wage_garnishments, and year and then removing rows with missing values using na.omit().also included scaling monetary values to millions for readability using /1e6.
+3. Data summarization using functions from dplyr (e.g., summarise(), group_by()) to compute descriptive statistics.
+4. Visualization using ggplot2, customized with appropriate labels, non-default color schemes, and readable axes.
+5. Correlation analysis using the cor() function.
+6. Regression analysis was done.  
+
+### Parameters and Thresholds
+- Bins for histograms were manually set to 20 to balance detail and readability.
+- Outliers were visually identified in boxplots but not removed, as they reflect important financial variations.
+- Regression analysis was done with the geom_smooth() function using method = "lm" (linear model).  
+
+### Data transformation  
+
+- All payment-related values were divided by 1e6 to convert them into millions for clearer interpretation.
+- The year variable was converted to a factor to be used effectively in categorical plots.  
+
+### Tools and Packages  
+
+The following R packages were used:
+
+- tidytuesdayR – for dataset access
+- dplyr – for data wrangling and summarization
+- ggplot2 – for all visualizations
+- kableExtra – to format summary tables for inclusion in the report
+- readr – for CSV reading
+- stats – for Pearson correlation
+
+### Diagnostic Checks  
+
+Visual skewness was assessed using histograms. Distribution spread was evaluated using boxplots and IQR. Linearity between rehabilitation and voluntary payments was verified through scatterplot inspection and confirmed by the Pearson correlation.
+
+
+# Numerical Summary Statistics
+
+First, the data is loaded and cleaned to prepare for the computation of numerical summaries.
+In the process of cleaning, we had to check for any missing values (NA values)in the columns related to rehabilitation, voluntary payments, wage garnishments and year. The rows containing the missing values are then removed for the aforementioned columns.
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# Dataset: U.S. Student Loan Collections (TidyTuesday, 2019-11-26)
+# Install via pak::pak("dslc-io/tidytuesdayR")
+tuesdata <- tidytuesdayR::tt_load("2019-11-26")
+loans <- tuesdata$loans
+ 
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# data load
+library(dplyr)
+library(readr)
+library(kableExtra)
+library(ggplot2)
+theme_set(theme_bw())
+```
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# select data
+loans2_tr <- loans %>% select(year,agency_name,voluntary_payments,wage_garnishments)
+```
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# character data converted to factor
+loans6_factor_br_1 <- loans
+loans6_factor_br_1$agency_name <- as.factor(loans6_factor_br_1$agency_name)
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# remove NA values
+loans_nona <- loans %>%
+  select(rehabilitation, year, voluntary_payments, wage_garnishments, agency_name) %>%
+  na.omit() %>% 
+  mutate(year = factor(year))
+```
+
+The tables below (@tbl-my-table1, @tbl-my-table2, and @tbl-my-table3) show the summary statistics for loan rehabilitation, voluntary payments, and wage garnishments, and @tbl-my-table4, @tbl-my-table5, and @tbl-my-table6 show the summary of them by year.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-my-table1
+#| tbl-cap: "Summary Statistics for loan rehabilitation."
+
+# Summary statistics for rehabilitation
+loans_nona %>% 
+  summarise(mean = mean(rehabilitation/1e6),
+            median = median(rehabilitation/1e6),
+            SD = sd(rehabilitation/1e6),
+            Variance = var(rehabilitation/1e6),
+            'Q1' = quantile(rehabilitation/1e6, probs = 0.25),
+            'Q3' = quantile(rehabilitation/1e6, probs = 0.75),
+            IQR(rehabilitation/1e6)) %>% 
+  kable()
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-my-table2
+#| tbl-cap: "Summary Statistics for voluntary payments."
+# Summary statistics for voluntary payments 
+loans_nona %>% 
+  summarise(mean = mean(voluntary_payments/1e6),
+            median = median(voluntary_payments/1e6),
+            SD = sd(voluntary_payments/1e6),
+            Variance = var(voluntary_payments/1e6),
+            'Q1' = quantile(voluntary_payments/1e6, probs = 0.25),
+            'Q3' = quantile(voluntary_payments/1e6, probs = 0.75),
+            IQR(voluntary_payments/1e6)) %>% 
+  kable()
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-my-table3
+#| tbl-cap: "Summary Statistics for wage garnishment."
+# Summary statistics for wage garnishments
+loans_nona %>% 
+  summarise(mean = mean(wage_garnishments/1e6),
+            median = median(wage_garnishments/1e6),
+            SD = sd(wage_garnishments/1e6),
+            Variance = var(wage_garnishments/1e6),
+            'Q1' = quantile(wage_garnishments/1e6, probs = 0.25),
+            'Q3' = quantile(wage_garnishments/1e6, probs = 0.75),
+            IQR(wage_garnishments/1e6)) %>% 
+  kable()
+```
+
+
+In the above tables, it is seen that the mean rehabilitation value is greater than the median ($81.59 > $54.50), which indicates that the data might be right-skewed. This means that most rehabilitation values are smaller, and a few large rehabilitation values can push the mean up. The variability for rehabilitation seems to be quite high, which is observed from a large interquartile range of $98.20 i.e the middle 50% of the data are spread out by $98.20.
+
+Similarly, the mean is greater than the median for both voluntary payments and wage garnishments, which indicates a positvely skewed data. However, the spread of the data is comparatively smaller for the two variables than the rehabilitation value,e as observed from IQR values. Value for Voluntary payments has the smallest variability (smallest IQR of $6.59) i.e middle half of the data is most concentrated.
+
+Since all the data are more or less right-skewed, the median could reflect a better value of the central tendency, and the interquartile range a better reflection of the variability.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-my-table4
+#| tbl-cap: "Summary statistics for loan rehabilitation by year"
+loans_nona %>% 
+  group_by(year) %>% 
+  summarise(mean = mean(rehabilitation/1e6),
+            median = median(rehabilitation/1e6),
+            SD = sd(rehabilitation/1e6),
+            Variance = var(rehabilitation/1e6),
+            'Q1' = quantile(rehabilitation/1e6, probs = 0.25),
+            'Q3' = quantile(rehabilitation/1e6, probs = 0.75),
+            IQR(rehabilitation/1e6)) %>% 
+  kable()
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-my-table5
+#| tbl-cap: "Summary Statistics for voluntary payments by Year"
+loans_nona %>% 
+  group_by(year) %>% 
+  summarise(mean = mean(voluntary_payments/1e6),
+            median = median(voluntary_payments/1e6),
+            SD = sd(voluntary_payments/1e6),
+            Variance = var(voluntary_payments/1e6),
+            'Q1' = quantile(voluntary_payments/1e6, probs = 0.25),
+            'Q3' = quantile(voluntary_payments/1e6, probs = 0.75),
+            IQR(voluntary_payments/1e6)) %>% 
+  kable()
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-my-table6
+#| tbl-cap: "Summary Statistics for wage garnishment by Year."
+loans_nona %>% 
+  group_by(year) %>% 
+  summarise(mean = mean(wage_garnishments/1e6),
+            median = median(wage_garnishments/1e6),
+            SD = sd(wage_garnishments/1e6),
+            Variance = var(wage_garnishments/1e6),
+            'Q1' = quantile(wage_garnishments/1e6, probs = 0.25),
+            'Q3' = quantile(wage_garnishments/1e6, probs = 0.75),
+            IQR(wage_garnishments/1e6)) %>% 
+  kable()
+```
+
+
+The above tables (@tbl-my-table4, @tbl-my-table5, and @tbl-my-table6) include data with respect to the years 2015 to 2018. We can see that the mean is greater than the median for all the data types (rehabilitation, voluntary payments and wage garnishments) implying that the data is positively skewed for all the years.
+
+In the case of loan rehabilitation, the data is comparatively most spread out (SD $89.89 and IQR $119.87) and skewed in 2017 (mean $81.39 > median $40.29).
+
+Similarly, the highest spread (the highest IQR of $8.18) and skewness is exhibited for voluntary payments in the year 2017, which is shown by the difference between the mean and the median.
+
+However, the data for wage garnishments displays the greatest skewness (mean $12.02 > median $7.98) and the highest variability (SD $10 and IQR $19.69)in 2018.
+
+
+# Visualizing Data
+
+
+## Histogram
+
+As seen from the summary statistics above in @fig-my-plot1, @fig-my-plot2, and @fig-my-plot3 and the visualization using histograms below, all the data for rehabilitation, voluntary payments, and wage garnishments are skewed.
+
+In @fig-my-plot2, rehabilitation value seems right-skewed with a median around $54.50M and a mean around $81.59M. There appears to be an outlier based on this plot. Here, positive skewness implies that a majority of the borrowers are successfully rehabilitated while only a few require more extensive interventions. An outlier may represent a borrower who has undergone an unusually extensive rehabilitation experience.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-my-plot1
+#| fig-cap: "Frequency Data of Rehabilitation."
+#| fig-height: 3
+#| fig-width: 5
+ 
+#| fig-align: center
+# visualize data using a histogram
+ggplot(loans_nona) +
+  geom_histogram(aes(x = rehabilitation/1e6), bins = 20,
+                 fill = "lightblue", colour = "black") +
+  labs(x = "Rehabilitation ($)", y = "Frequency")
+```
+
+In @fig-my-plot2, the positive skewness highlights that a few borrowers make significantly higher voluntary payments, while the bimodal shape indicates that there are two distinct groups of borrowers—one group making minimal payments and another making more substantial voluntary payments.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-my-plot2
+#| fig-cap: "Frequency Data of Voluntary Payments."
+#| fig-height: 3
+#| fig-width: 5
+ 
+#| fig-align: center
+# visualize data using a histogram
+ggplot(loans_nona) +
+  geom_histogram(aes(x = voluntary_payments/1e6), bins = 20,
+                 fill ="lightgreen", colour = "black") +
+  labs(x = "Voluntary Payments ($)", y = "Frequency")
+```
+
+The frequency data of wage garnishments in @fig-my-plot3 is also somewhat right-skewed and unimodal, with the highest data density showing at the value of $6.49 (median). Here, positive skewness indicates that the majority of the borrowers may have only a few or no wage garnishments, and only a small number of borrowers have experienced multiple or extreme garnishments.
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-my-plot3
+#| fig-cap: "Frequency Data of Wage Garnishments."
+#| fig-height: 3
+#| fig-width: 5
+ 
+#| fig-align: center
+# visualize data usinga  histogram
+ggplot(loans_nona) +
+  geom_histogram(aes(x = wage_garnishments/1e6), bins = 20,
+                 fill ="orange", colour = "black") +
+  labs(x = "Wage Garnishments ($)", y = "Frequency")
+```
+
+## Boxplots
+
+To delve deeper into the dataset, we are now interested in seeing patterns of the data related to rehabilitation and voluntary payments based on the years from 2015 to 2018.
+
+When we look at the boxplot on rehabilitation in @fig-my-plot4, it seems that there is a higher variability and greater skewness in the years 2017 and 2018 compared to 2015 and 2016, respectively, with the highest IQR at $119.87 in 2017. This means that in 2017, the borrowers were highly diverse in terms of the amount of rehabilitation they needed. The data in 2016 appears to have outliers.
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-my-plot4
+#| fig-cap: "Boxplots on Rehabilitation by Year."
+#| fig-height: 3
+#| fig-width: 5
+ 
+#| fig-align: center
+# visualize data using boxplots
+ggplot(loans_nona) +
+  geom_boxplot(aes(x = year, y = rehabilitation/1e6), staplewidth = 0.4,
+               colour = "darkred", fill = "lightpink") +
+  labs(x = "Year", y = "Rehabilitation")
+```
+
+@fig-my-plot5 illustrates the data on voluntary payments by year. It seems that the highest variability is experienced in the year 2017 with IQR value of $8.18. This implies that the borrowers are making a broad range of voluntary payment amounts in 2017. There are outliers in the dataset of 2015 and 2016.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-my-plot5
+#| fig-cap: "Boxplots on Voluntary payments by Year."
+#| fig-height: 3
+#| fig-width: 5
+ 
+#| fig-align: center
+# visualize data using boxplots
+ggplot(loans_nona) +
+  geom_boxplot(aes(x = year, y = voluntary_payments/1e6), staplewidth = 0.4,
+               colour = "darkgreen", fill = "lightgreen") +
+  labs(x = "Year", y = "Voluntary Payments")
+```
+
+
+## Scatterplot
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: fig-my-plot6
+#| fig-cap: "Scatter plot of Rehabilitation vs. Payments."
+#| fig-height: 3
+#| fig-width: 5
+#| fig-align: center
+# visualize data usinga  scatter plot, create a regression line
+ggplot(loans_nona) +
+  geom_point(aes(x = rehabilitation/1e6, y = voluntary_payments/1e6)) + 
+  geom_smooth(aes(x = rehabilitation/1e6, y = voluntary_payments/1e6), 
+              method = "lm", 
+              se = FALSE, 
+              color = "blue") +
+  labs(x = "Rehabilitation", y = "Voluntary Payments", 
+       caption = "Data from TidyTuesdayR")
+```
+```{r}
+#| echo: false
+#| results: "hide"
+#| message: false
+#| warning: false
+
+# Compute Pearson correlation coefficient (r-value)
+cor(loans_nona$rehabilitation, loans_nona$voluntary_payments, use = "complete.obs")
+
+```
+The scatter plot in @fig-my-plot6 illustrates the relationship between Rehabilitation and Voluntary Payments. It shows that there is a positive correlation between Rehabilitation and Voluntary Payments, meaning that as rehabilitation spending increases, voluntary payments tend to increase as well. The regression line is upward-sloping, and correlation coefficient(r) is 0.8 which further confirms this strong positive trend.  
+
+We are interested in knowing whether there is any association between the amount of voluntary payments made by borrowers and the amount spent on loan rehabilitation. To test this, we used the variables "voluntary_payments" and "rehabilitation" from the Data on Student Loan Debt in the US, consisting of 291 borrowers.
+Question 1: Is voluntary_payments associated with rehabilitation? This can be tested using Pearson’s Correlation Test.
+Question 2: If so, what is the magnitude of this effect? This can be found using Pearson’s r.
+
+**Pearson’s r correlation**
+
+Null Hypothesis: Voluntary payments are not associated with rehabilitation.
+Alternative Hypothesis: Voluntary payments are associated with rehabilitation.
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+library(rstatix)
+library(psych)
+cor.test(loans_nona$voluntary_payments, loans_nona$rehabilitation, method = "pearson")
+```
+We have calculated a correlation of 0.791. Since p < .05 for the correlation, we would reject the null hypothesis.
+Based on Cohen's (1988) conventions, the correlation between voluntary payments and rehabilitation is large.
+The current study sought to test whether voluntary payment was associated with rehabilitation using a sample of 291 borrowers. The sample contained no extreme outliers, and scatterplots showed linearity in the relationships between variables. However, histograms for each variable demonstrated non-normality. Nonetheless, Pearson’s correlations were performed. Results of the correlational analysis showed there was a significant association between voluntary payments and rehabilitation, r = 0.791, p < 0.001.
+Therefore, as rehabilitation increased, voluntary payments also increased as well.
+
+
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+#R <- corr.test(loans_nona[, c("voluntary_payments", "rehabilitation")], method = "pearson")
+#R$r^2
+```
+
+**Regression**
+
+We can expand our correlational analysis by running a regression model on the data. This answers the question, is rehabilitation a significant predictor of voluntary payments? Although we did not mention it in the proposal, we did this analysis to get it as it was linked to the previous correlation we did. 
+
+Null Hypothesis: Voluntary payments are not a significant predictor of rehabilitation.
+Alternative Hypothesis: Voluntary payments are a significant predictor of rehabilitation.
+```{r}
+#| echo: false
+#| warning: false
+#| message: false
+model <- lm(voluntary_payments ~ rehabilitation, data = loans_nona)
+summary(model)
+```
+Since the p-value is less than .05, rehabilitation is a significant predictor of voluntary payments.
+We can see, based on Cohen's (1988) conventions, that our overall regression model 
+explains a large proportion of variability in our outcome.
+
+The current study sought to test whether rehabilitation was a significant predictor of voluntary payment using a sample of 291 borrowers. The sample contained no extreme outliers, and scatterplots showed linearity in the relationships between variables. 
+(However, a Shapiro-Wilks test demonstrated non-normality for each of the variables) Nonetheless, Pearson’s correlations were performed. Correlational analysis showed voluntary payment was significantly associated with rehabilitation, r = 0.791, p < 0.001. Additionally, a linear regression model was tested with rehabilitation as the predictor and voluntary payment as the outcome. The overall regression model was significant, F(1, 
+278) = 465.1, p < 0.001, $𝑅^2$ = 0.62. According to Cohen’s (1988) conventions, the overall model explained a large proportion of variability in voluntary payments. Rehabilitation was the significant predictor (t(278) = 21.57, p = 2e-16), with greater rehabilitation predicting voluntary payments. 
+
+ 
+\newpage
+# Bibliography
+:::{#refs}
+:::
+
+# Appendix   
+
+## Codes
+
+```{r}
+#| echo: true
+#| eval: false
+#| ref-label: !expr knitr::all_labels()
+```
+
+
+
+
