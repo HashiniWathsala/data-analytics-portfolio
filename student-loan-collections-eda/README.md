@@ -5,7 +5,7 @@
 
 ## Problem
 
-Student loan default collections rely on multiple recovery mechanisms, including rehabilitation, voluntary payments, and wage garnishment. This project explores how these mechanisms relate—particularly whether higher rehabilitation activity is associated with higher voluntary repayments.
+Student loan default collections rely on multiple recovery mechanisms, including rehabilitation, voluntary payments, and wage garnishment. This project explores how these mechanisms relate particularly whether higher rehabilitation activity is associated with higher voluntary repayments.
 
 ## Dataset
 
@@ -40,7 +40,7 @@ Higher rehabilitation activity is associated with higher voluntary repayments. T
 - Aggregated data (agency-year), not individual borrower-level  
 - No demographic or income variables available  
 - Only four years of observations  
-- Skewed distributions suggest additional robustness checks could improve analysis  
+- Skewed distributions suggest additional robustness checks could improve the analysis  
 
 ## Future Improvements
 
