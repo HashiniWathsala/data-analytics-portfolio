@@ -1,0 +1,182 @@
+---
+title: "Cancer Outcomes, Poverty, and Clinical Trial Availability: A Regression Analysis"
+author: "Hashini Wathsala"
+format:
+  pdf:
+    toc: true
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+# Introduction
+Socioeconomic inequality is widely recognized as a major determinant of public health outcomes. In the United States, disparities in income, education, and access to healthcare may influence both cancer mortality rates and the distribution of clinical trials.
+This study investigates whether economically disadvantaged counties experience higher cancer death rates and reduced access to clinical research opportunities. Using county-level socioeconomic and health data, multiple regression models are developed to quantify the relationship between poverty and two key outcomes: cancer mortality and clinical trial availability.
+
+All analyses were conducted in R using reproducible workflows to ensure transparency and replicability. (This project was originally developed as part of graduate coursework and has been revised for portfolio presentation.)
+
+### Key Questions
+
+1. Do poorer regions experience higher cancer mortality?
+2. Are clinical trials less available in economically disadvantaged areas?
+
+These hypotheses are evaluated using multiple linear regression models.
+
+**Research Q1 (Deaths)**: Are economically deprived regions home to people who suffer from more incidences of cancer (measured by target death rate\`)?
+
+**Research Q2 (Trials)**: Are fewer clinical trials for cancer (`studyPerCap`) performed in poorer regions?
+
+### Hypotheses
+
+**Null hypothesis (H₀):** Economic deprivation is not a significant predictor of either outcome.
+
+$$H_0: \beta_1=\beta_2=\ldots=\beta_p=0$$
+
+**Alternative hypothesis (H₁):** Economic deprivation is a significant predictor of cancer death rates and/or clinical trials per capita.
+
+$$H_A: \text{at least one } \beta_j \text{ is not zero}$$
+ 
+## Data Exploration
+
+The dataset file cancer_reg.csv is stored in this project folder to ensure the analysis runs on any machine.
+**Summary statistics for selected variables**
+
+```{r, results='hide'}
+# Libraries
+library(readr)
+library(dplyr)
+# Load Data 
+cancer <- read_csv("cancer_reg.csv",show_col_types = FALSE)
+# summary of selected data variables
+summary(select(cancer, TARGET_deathRate, studyPerCap, povertyPercent, medIncome, incidenceRate, avgDeathsPerYear, popEst2015))
+```
+The summary statistics reveal substantial variation across U.S. counties. Cancer death rates ranged from 59.7 to 362.8 per 100,000 population, with a mean of approximately 178. Clinical trial activity was highly uneven: the median county reported no trials, while a small number of large counties accounted for thousands. Poverty levels ranged from 3.2% to 47.4% (median 15.9%), and median household income varied widely from \$22,640 to \$125,635. These disparities highlight significant socioeconomic and health inequalities across counties, motivating further investigation into the relationship between poverty, cancer mortality, and clinical trial availability.
+ 
+```{r}
+# Create scatter plots
+library(ggplot2)
+library(patchwork)
+
+p1 <- ggplot(cancer, aes(povertyPercent, TARGET_deathRate)) +
+  geom_point(alpha=0.4, color="steelblue") +
+  geom_smooth(method="lm", se=FALSE, color="red") +
+  labs(title="Cancer Death Rate vs Poverty",
+       x="Poverty (%)", y="Cancer Death Rate (per 100,000)") +
+  theme_minimal()
+
+p2 <- ggplot(cancer, aes(povertyPercent, studyPerCap)) +
+  geom_point(alpha=0.4, color="darkgreen") +
+  geom_smooth(method="lm", se=FALSE, color="red") +
+  labs(title="Clinical Trials vs Poverty",
+       x="Poverty (%)", y="Clinical Trials per Capita") +
+  theme_minimal()
+
+# Combine plots
+p1 + p2
+
+```
+
+The scatterplots show general trends between poverty and cancer outcomes, but the wide spread of points suggests that other factors also influence these results. This justifies the use of multiple regression, which allows us to test the effect of poverty while controlling for additional variables such as income, education, population, and cancer incidence.
+
+## Model Building
+
+**Model for Cancer death rates**
+
+I built a multiple regression model by adding povertypercent, median income, incidence rate, and average deaths per year. For example, I selected the incidence rate variable because counties with more cancer cases naturally face higher mortality, so adjusting for disease burden makes the poverty effect clearer.
+
+To improve the model, I tested a larger set of socioeconomic variables, such as education, insurance coverage, unemployment, and median age, and then used backward stepwise selection to keep only the most important predictors. Education was included because higher education levels may reflect better access to health information, healthier lifestyles, and greater use of preventive care, which can reduce cancer mortality.
+
+The reduced model kept poverty, median income, incidence rate, and education, suggesting that these factors best explain the differences in cancer death rates across counties.
+
+Residual plots showed the model was reasonably linear with constant variance, but there was some curvature. This process meant I started with many possible variables but ended with a smaller, clearer model that explained the outcome well.
+
+```{r,results='hide'}
+## Multiple regression
+m1_full <- lm(TARGET_deathRate ~ povertyPercent + medIncome + incidenceRate + avgDeathsPerYear + popEst2015 + PctUnemployed16_Over +PctBachDeg25_Over + PctPublicCoverage, data = cancer)
+summary(m1_full)
+
+```
+
+```{r, results = 'hide'}
+m1_smallest <- lm(TARGET_deathRate ~ 1, data = cancer)
+
+m1_step <- step(m1_full,
+               scope = list(lower = m1_smallest, upper = m1_full),
+               direction = "backward", trace = 0)
+
+summary(m1_step)
+
+```
+```{r}
+#| fig-show: hide
+#| echo: false
+plot(m1_step, which = 1)
+```
+
+## Model for Clinical trials
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| results: hide
+
+m2_full <- lm(studyPerCap ~ povertyPercent + medIncome + popEst2015 +
+                            PctUnemployed16_Over + PctBachDeg25_Over +
+                            PctPublicCoverage, data = cancer)
+
+m2_smallest <- lm(studyPerCap ~ 1, data = cancer)
+
+m2_step <- step(m2_full,
+                scope = list(lower = m2_smallest, upper = m2_full),
+                direction = "backward", trace = 0)
+
+summary(m2_step)
+```
+```{r}
+#| fig-show: hide
+#| echo: false
+plot(m2_step, which = 1)
+```
+For the clinical trials outcome, the initial model included poverty rate, median income, county population, education level, unemployment, and insurance coverage. These variables were selected because larger, wealthier, and more educated counties are more likely to host universities, major hospitals, and research institutions.
+
+Backward stepwise selection based on AIC was applied to identify a more parsimonious model. The final model retained poverty percentage, median income, incidence rate, and education level as the strongest predictors of clinical trial activity. The highly skewed distribution of trials per capita — with many counties reporting none — suggests that trial availability is concentrated in a limited number of research hubs.
+
+Stepwise selection simplified the model by removing predictors that did not substantially improve model fit while retaining those most strongly associated with the outcomes.
+ 
+# Results
+This section summarizes the findings of the regression analyses for cancer mortality and clinical trial availability across U.S. counties.
+
+## Cancer Death Rates
+
+The regression model for cancer mortality was highly significant (F(6, 3040) = 453.5, p < 0.001) and explained approximately 47% of the variation in death rates (Adjusted R² = 0.471), indicating strong predictive power for county-level health outcomes.
+
+- Poverty percentage was positive and significant (coefficient = 8.55, p < 0.001), indicating higher mortality in poorer counties.
+- Incidence rate was strongly positive (coefficient = 2.13, p < 0.001), reflecting that higher disease burden leads to more deaths.
+- Education level (PctBachDeg25_Over) was negative and significant (coefficient = −1.68, p < 0.001), suggesting that counties with more college-educated residents experience lower mortality.
+- Additional variables, including unemployment and population size, also showed significant associations.
+
+Diagnostic plots indicated that residuals were generally centered around zero with mild curvature, suggesting minor nonlinearity but no severe violations of regression assumptions. A small number of influential observations were present but did not materially affect the results.
+
+**Conclusion:** Higher poverty and lower education are strongly associated with increased cancer mortality, supporting the hypothesis that economically disadvantaged counties face worse health outcomes. 
+
+## Cancer Clinical Trials
+
+The clinical trials model was statistically significant (F(4, 3042) = 12.9, p < 0.001) but explained only 1.5% of the variation (Adjusted R² = 0.015), indicating limited predictive power. This suggests that trial availability depends heavily on factors beyond county-level socioeconomic conditions, such as research infrastructure and urbanization.
+
+- Poverty percentage was negative and significant (coefficient = −6.36, p = 0.010), indicating fewer trials in poorer counties.
+- Education level was strongly positive (coefficient = 1.46, p < 0.001), suggesting that more educated regions host more research activity.
+- Population size showed a weak positive relationship (p ≈ 0.05), consistent with the concentration of trials in larger counties.
+- Median income was negative and significant, likely reflecting overlap with poverty and education variables.
+
+Residual analysis showed most counties clustered near zero trials, with a small number of extreme values representing major research centers.
+
+**Conclusion:** Clinical trial availability is lower in poorer counties and higher in more educated and populous regions, although socioeconomic factors alone explain only a small portion of the variation.
+ 
+## Model Fit and Limitations
+
+The cancer mortality model demonstrated strong explanatory power, accounting for nearly half of the observed variation in death rates. In contrast, the clinical trials model explained less than 2% of the variation, largely due to the highly skewed distribution of trial activity, with most counties reporting none and a small number reporting very high counts.
+Both models exhibited outliers and influential observations. Additionally, because the analysis uses county-level data, the findings may not directly generalize to individual outcomes (ecological fallacy). Important factors not included in the dataset — such as hospital infrastructure, presence of oncology centers, urbanization, and policy differences — may also influence results and limit predictive accuracy.
+  
+ 
+ 
