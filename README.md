@@ -39,7 +39,6 @@ Regression analysis examining how socioeconomic factors influence cancer mortali
 - Education level is negatively related to mortality and positively related to trial availability
 - Clinical trials are concentrated in wealthier, more educated counties
 - Socioeconomic variables explain substantial variation in mortality but limited variation in trial distribution
-
 ➡️ [View Project](cancer-poverty-regression/)
 ---
 
