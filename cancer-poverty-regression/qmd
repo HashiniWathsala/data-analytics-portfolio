@@ -13,7 +13,7 @@ execute:
 Socioeconomic inequality is widely recognized as a major determinant of public health outcomes. In the United States, disparities in income, education, and access to healthcare may influence both cancer mortality rates and the distribution of clinical trials.
 This study investigates whether economically disadvantaged counties experience higher cancer death rates and reduced access to clinical research opportunities. Using county-level socioeconomic and health data, multiple regression models are developed to quantify the relationship between poverty and two key outcomes: cancer mortality and clinical trial availability.
 
-All analyses were conducted in R using reproducible workflows to ensure transparency and replicability. (This project was originally developed as part of graduate coursework and has been revised for portfolio presentation.)
+All analyses were conducted in R using reproducible workflows to ensure transparency and replicability.  
 
 ### Key Questions
 
