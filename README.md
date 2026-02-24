@@ -8,7 +8,7 @@ MSc Big Data Analytics student at Trent University, Canada, with experience anal
 **Libraries & Tools:** pandas, NumPy, scikit-learn, tidyverse, ggplot2  
 **Analytics:** Regression, classification, clustering, hypothesis testing  
 **Data Handling:** Data cleaning, transformation, exploratory data analysis  
-**Visualization:** ggplot2, matplotlib, seaborn 
+**Visualization:** ggplot2, matplotlib, seaborn  
 **Focus Areas:** Predictive analytics, statistical modeling, business insights, and data-driven decision support
 
 ---
