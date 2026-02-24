@@ -1,7 +1,7 @@
 # Cancer Outcomes and Poverty ( Regression Analysis)
 
 ## Overview
-This project investigates whether economically deprived regions experience higher cancer mortality and fewer clinical trials. Using county-level data from the United States, multiple regression models were developed to examine the relationship between poverty and two key outcomes: cancer death rates and clinical trial availability.
+This project investigates whether economically deprived regions experience higher cancer mortality and fewer clinical trials. Using county-level data from the United States, multiple regression models were developed to examine the relationship between poverty and two key outcomes: cancer death rates and clinical trial availability. (This project was originally developed as part of graduate coursework and has been revised for portfolio presentation.)
 
 ## Objectives
 - Analyze the relationship between poverty and cancer mortality
