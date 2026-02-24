@@ -30,6 +30,17 @@ Exploratory analysis of U.S. student loan recovery mechanisms using aggregated a
 
 ➡️ [View Project](student-loan-collections-eda/) 
 
+### 🧬 Cancer Outcomes, Poverty, and Clinical Trial Availability
+
+Regression analysis examining how socioeconomic factors influence cancer mortality and access to clinical trials across U.S. counties.
+
+**Key insights:**
+- Higher poverty levels are strongly associated with increased cancer death rates
+- Education level is negatively related to mortality and positively related to trial availability
+- Clinical trials are concentrated in wealthier, more educated counties
+- Socioeconomic variables explain substantial variation in mortality but limited variation in trial distribution
+
+➡️ [View Project](cancer-poverty-analysis/)
 ---
 
 ## About Me
